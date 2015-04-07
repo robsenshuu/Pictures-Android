@@ -1,0 +1,34 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent" android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
+
+
+    <Button
+        android:id="@+id/buttonImage"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:contentDescription="@string/contentDescriptionButtonImage"
+        android:background="@drawable/camera_icon"
+        android:layout_centerHorizontal="true"/>
+
+    <ImageView
+        android:id="@+id/setPicture"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/contentDescriptionImagenSet"
+        android:layout_below="@+id/buttonImage"/>
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="New Button"
+        android:id="@+id/buttonI"
+        android:layout_alignTop="@+id/buttonImage"
+        android:layout_toLeftOf="@+id/buttonImage"
+        android:layout_toStartOf="@+id/buttonImage" />
+
+</RelativeLayout>
