@@ -74,7 +74,7 @@ public class MainActivity extends ActionBarActivity {
          */
         this.file = new File(Environment.getExternalStorageDirectory(),
                 MEDIA_DIRECTORY);
-        //file.mkdirs();
+        file.mkdirs();
 
         path = Environment.getExternalStorageDirectory()
                 + File.separator + MEDIA_DIRECTORY + File.separator
