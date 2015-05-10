@@ -9,28 +9,23 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.os.Environment;
 import android.widget.ImageView;
-import com.facebook.Session;
 
 import java.io.File;
-import java.io.IOException;
 
 
-public class MainActivity extends ActionBarActivity{
+public class MainActivity extends ActionBarActivity {
 
     private String APP_DIRECTORY = "myPictureApp/";
     private String MEDIA_DIRECTORY = APP_DIRECTORY + "media";
     private String TEMPORAL_PICTURE_NAME = "temporal.jpg";
 
     private Button buttonPicture;
-    private Button btnIntent;
-    private int PHOTO_CODE = 100;
+    private final int PHOTO_CODE = 100;
+    private final int SELECT_PICTURE = 200;
     private String fileName;
 
     private File file;
@@ -42,15 +37,6 @@ public class MainActivity extends ActionBarActivity{
         setContentView(R.layout.activity_main);
 
         buttonPicture = (Button) findViewById(R.id.buttonImage);
-        btnIntent = (Button) findViewById(R.id.buttonI);
-        btnIntent.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getApplicationContext(), Hola.class);
-                startActivity(intent);
-            }
-        });
-
 
         buttonPicture.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -61,11 +47,18 @@ public class MainActivity extends ActionBarActivity{
                 builder.setItems(options, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (options[which] == "Tomar foto"){
+                        if (options[which] == "Tomar foto") {
                             openCamera();
-                        }else if(options[which] == "Elegir de galeria"){
+                        } else if (options[which] == "Elegir de galeria") {
+                            Intent intent = new Intent(
+                                    Intent.ACTION_PICK,
+                                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            intent.setType("image/*");
+                            startActivityForResult(
+                                    Intent.createChooser(intent, "Select File"),
+                                    SELECT_PICTURE);
 
-                        }else if(options[which] == "Cancelar"){
+                        } else if (options[which] == "Cancelar") {
                             dialog.dismiss();
                         }
                     }
@@ -75,25 +68,17 @@ public class MainActivity extends ActionBarActivity{
         });
     }
 
-    public void openCamera(){
-        /*
-        final String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/picFolder/";
-        File newdir = new File(dir);
-        newdir.mkdirs();
-        */
-
+    public void openCamera() {
         /**
          *  here, we are making a folder named myPictureApp to store pics taken by the camera using this application
          */
         this.file = new File(Environment.getExternalStorageDirectory(),
                 MEDIA_DIRECTORY);
-        file.mkdirs();
+        //file.mkdirs();
 
-         path = Environment.getExternalStorageDirectory()
+        path = Environment.getExternalStorageDirectory()
                 + File.separator + MEDIA_DIRECTORY + File.separator
                 + TEMPORAL_PICTURE_NAME;
-
-        Log.i("Directorio ", "Imagen " + path);
 
         File newFile = new File(path);
 
@@ -107,25 +92,27 @@ public class MainActivity extends ActionBarActivity{
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(resultCode == RESULT_OK){
-            if(requestCode == PHOTO_CODE){
-                setImageUI();
-            }
-        }else{
-            Log.i("NO FUE VALIDO", "mCode == FALSE");
+        switch (requestCode){
+            case PHOTO_CODE:
+                if(resultCode == RESULT_OK){
+                    String dir = Environment.getExternalStorageDirectory()
+                            + File.separator + MEDIA_DIRECTORY + File.separator
+                            + TEMPORAL_PICTURE_NAME;
+                    decodeBitmap(dir);
+                }
+            break;
+
+            case SELECT_PICTURE:
+                if (resultCode == RESULT_OK){
+                    Uri path = data.getData();
+                    ImageView image = (ImageView) findViewById(R.id.setPicture);
+                    image.setImageURI(path);
+
+                }
         }
     }
 
-    public void setImageUI(){
-        String dir =  Environment.getExternalStorageDirectory()
-                    + File.separator + MEDIA_DIRECTORY + File.separator
-                    + TEMPORAL_PICTURE_NAME;
-
-        Log.e("Roberto", "Image path: " + dir);
-        decodeBitmap(dir);
-    }
-
-    public void decodeBitmap(String dir){
+    public void decodeBitmap(String dir) {
         Bitmap bitmap;
         BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
         bitmap = BitmapFactory.decodeFile(dir, bitmapOptions);
@@ -133,30 +120,5 @@ public class MainActivity extends ActionBarActivity{
         ImageView mImageSet = (ImageView) findViewById(R.id.setPicture);
         mImageSet.setImageBitmap(bitmap);
 
-    }
-
-    // /storage/sdcard0/myPictureApp/media/temporal
-    // /storage/sdcard0/myPictureApp/media/temporal
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 }
