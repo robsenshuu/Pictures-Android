@@ -9,12 +9,15 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.os.Environment;
 import android.widget.ImageView;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -23,20 +26,17 @@ public class MainActivity extends ActionBarActivity {
     private String MEDIA_DIRECTORY = APP_DIRECTORY + "media";
     private String TEMPORAL_PICTURE_NAME = "temporal.jpg";
 
-    private Button buttonPicture;
     private final int PHOTO_CODE = 100;
     private final int SELECT_PICTURE = 200;
-    private String fileName;
-
-    private File file;
-    private String path;
+    private ImageView image;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        buttonPicture = (Button) findViewById(R.id.buttonImage);
+        image = (ImageView) findViewById(R.id.setPicture);
+        Button buttonPicture = (Button) findViewById(R.id.buttonImage);
 
         buttonPicture.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,7 +55,7 @@ public class MainActivity extends ActionBarActivity {
                                     android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                             intent.setType("image/*");
                             startActivityForResult(
-                                    Intent.createChooser(intent, "Select File"),
+                                    Intent.createChooser(intent, "Select File :)"),
                                     SELECT_PICTURE);
 
                         } else if (options[which] == "Cancelar") {
@@ -69,14 +69,11 @@ public class MainActivity extends ActionBarActivity {
     }
 
     public void openCamera() {
-        /**
-         *  here, we are making a folder named myPictureApp to store pics taken by the camera using this application
-         */
-        this.file = new File(Environment.getExternalStorageDirectory(),
+        File file = new File(Environment.getExternalStorageDirectory(),
                 MEDIA_DIRECTORY);
         file.mkdirs();
 
-        path = Environment.getExternalStorageDirectory()
+        String path = Environment.getExternalStorageDirectory()
                 + File.separator + MEDIA_DIRECTORY + File.separator
                 + TEMPORAL_PICTURE_NAME;
 
@@ -84,7 +81,6 @@ public class MainActivity extends ActionBarActivity {
 
         Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(newFile));
-        cameraIntent.putExtra("file", path);
         startActivityForResult(cameraIntent, PHOTO_CODE);
     }
 
@@ -95,6 +91,7 @@ public class MainActivity extends ActionBarActivity {
         switch (requestCode){
             case PHOTO_CODE:
                 if(resultCode == RESULT_OK){
+
                     String dir = Environment.getExternalStorageDirectory()
                             + File.separator + MEDIA_DIRECTORY + File.separator
                             + TEMPORAL_PICTURE_NAME;
@@ -105,10 +102,9 @@ public class MainActivity extends ActionBarActivity {
             case SELECT_PICTURE:
                 if (resultCode == RESULT_OK){
                     Uri path = data.getData();
-                    ImageView image = (ImageView) findViewById(R.id.setPicture);
                     image.setImageURI(path);
-
                 }
+            break;
         }
     }
 
@@ -117,8 +113,7 @@ public class MainActivity extends ActionBarActivity {
         BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
         bitmap = BitmapFactory.decodeFile(dir, bitmapOptions);
 
-        ImageView mImageSet = (ImageView) findViewById(R.id.setPicture);
-        mImageSet.setImageBitmap(bitmap);
+        image.setImageBitmap(bitmap);
 
     }
 }

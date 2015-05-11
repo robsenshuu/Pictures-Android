@@ -10,8 +10,7 @@
         android:id="@+id/buttonImage"
         android:layout_width="80dp"
         android:layout_height="80dp"
-        android:contentDescription="@string/contentDescriptionButtonImage"
-        android:background="@drawable/camera_icon"
+        android:text="Foto"
         android:layout_centerHorizontal="true"/>
 
     <ImageView
