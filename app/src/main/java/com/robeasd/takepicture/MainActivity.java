@@ -1,23 +1,21 @@
 package com.robeasd.takepicture;
 
+
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.os.Environment;
 import android.widget.ImageView;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -26,39 +24,38 @@ public class MainActivity extends ActionBarActivity {
     private String MEDIA_DIRECTORY = APP_DIRECTORY + "media";
     private String TEMPORAL_PICTURE_NAME = "temporal.jpg";
 
+
+
     private final int PHOTO_CODE = 100;
     private final int SELECT_PICTURE = 200;
-    private ImageView image;
+
+    private ImageView imageView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        image = (ImageView) findViewById(R.id.setPicture);
-        Button buttonPicture = (Button) findViewById(R.id.buttonImage);
+        imageView = (ImageView) findViewById(R.id.setPicture);
+        Button button = (Button) findViewById(R.id.buttonImage);
 
-        buttonPicture.setOnClickListener(new View.OnClickListener() {
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 final CharSequence[] options = {"Tomar foto", "Elegir de galeria", "Cancelar"};
                 final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                builder.setTitle("Elige alguna opcion");
+                builder.setTitle("Elige una opcion :D");
                 builder.setItems(options, new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (options[which] == "Tomar foto") {
+                    public void onClick(DialogInterface dialog, int seleccion) {
+                        if(options[seleccion] == "Tomar foto"){
                             openCamera();
-                        } else if (options[which] == "Elegir de galeria") {
-                            Intent intent = new Intent(
-                                    Intent.ACTION_PICK,
-                                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                        }else if (options[seleccion] == "Elegir de galeria") {
+                            Intent intent = new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                             intent.setType("image/*");
-                            startActivityForResult(
-                                    Intent.createChooser(intent, "Select File :)"),
-                                    SELECT_PICTURE);
-
-                        } else if (options[which] == "Cancelar") {
+                            startActivityForResult(intent.createChooser(intent, "Selecciona app de imagen"), SELECT_PICTURE);
+                        }else if(options[seleccion] == "Cancelar"){
                             dialog.dismiss();
                         }
                     }
@@ -66,22 +63,25 @@ public class MainActivity extends ActionBarActivity {
                 builder.show();
             }
         });
+
     }
 
-    public void openCamera() {
-        File file = new File(Environment.getExternalStorageDirectory(),
-                MEDIA_DIRECTORY);
+
+
+
+
+    private void openCamera() {
+        File file = new File(Environment.getExternalStorageDirectory(), MEDIA_DIRECTORY);
         file.mkdirs();
 
-        String path = Environment.getExternalStorageDirectory()
-                + File.separator + MEDIA_DIRECTORY + File.separator
-                + TEMPORAL_PICTURE_NAME;
+        String path = Environment.getExternalStorageDirectory() + File.separator
+                + MEDIA_DIRECTORY + File.separator + TEMPORAL_PICTURE_NAME;
 
         File newFile = new File(path);
 
-        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(newFile));
-        startActivityForResult(cameraIntent, PHOTO_CODE);
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(newFile));
+        startActivityForResult(intent, PHOTO_CODE);
     }
 
     @Override
@@ -91,29 +91,26 @@ public class MainActivity extends ActionBarActivity {
         switch (requestCode){
             case PHOTO_CODE:
                 if(resultCode == RESULT_OK){
-
-                    String dir = Environment.getExternalStorageDirectory()
-                            + File.separator + MEDIA_DIRECTORY + File.separator
-                            + TEMPORAL_PICTURE_NAME;
+                  String dir =  Environment.getExternalStorageDirectory() + File.separator
+                          + MEDIA_DIRECTORY + File.separator + TEMPORAL_PICTURE_NAME;
                     decodeBitmap(dir);
                 }
             break;
 
             case SELECT_PICTURE:
-                if (resultCode == RESULT_OK){
+                if(resultCode == RESULT_OK){
                     Uri path = data.getData();
-                    image.setImageURI(path);
+                    imageView.setImageURI(path);
                 }
             break;
         }
+
     }
 
-    public void decodeBitmap(String dir) {
+    private void decodeBitmap(String dir) {
         Bitmap bitmap;
-        BitmapFactory.Options bitmapOptions = new BitmapFactory.Options();
-        bitmap = BitmapFactory.decodeFile(dir, bitmapOptions);
+        bitmap = BitmapFactory.decodeFile(dir);
 
-        image.setImageBitmap(bitmap);
-
+        imageView.setImageBitmap(bitmap);
     }
 }
