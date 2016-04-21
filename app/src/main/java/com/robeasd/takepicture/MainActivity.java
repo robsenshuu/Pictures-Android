@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -94,19 +95,25 @@ public class MainActivity extends AppCompatActivity {
 
     private void openCamera() {
         File file = new File(Environment.getExternalStorageDirectory(), MEDIA_DIRECTORY);
-        file.mkdirs();
+        boolean isDirectoryCreated = file.exists();
+        Log.d("roberto", " " + isDirectoryCreated);
+        if(!isDirectoryCreated)
+            isDirectoryCreated = file.mkdirs();
 
-        Long timeStamp = System.currentTimeMillis() / 1000;
-        String imageName = timeStamp.toString() + ".jpg";
+        if (isDirectoryCreated){
+            Long timeStamp = System.currentTimeMillis() / 1000;
+            String imageName = timeStamp.toString() + ".jpg";
 
-        mPath = Environment.getExternalStorageDirectory()
-                + File.separator + MEDIA_DIRECTORY + File.separator + imageName;
+            mPath = Environment.getExternalStorageDirectory()
+                    + File.separator + MEDIA_DIRECTORY + File.separator + imageName;
 
-        File newFile = new File(mPath);
+            File newFile = new File(mPath);
 
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(newFile));
-        startActivityForResult(intent, PHOTO_CODE);
+            Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(newFile));
+            startActivityForResult(intent, PHOTO_CODE);
+        }
+
 
     }
 
@@ -128,19 +135,26 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        switch (requestCode){
-            case PHOTO_CODE:
-                if(resultCode == RESULT_OK){
+        if(resultCode == RESULT_OK){
+            switch (requestCode){
+                case PHOTO_CODE:
+                    MediaScannerConnection.scanFile(this,
+                            new String[] { mPath }, null,
+                            new MediaScannerConnection.OnScanCompletedListener() {
+                                public void onScanCompleted(String path, Uri uri) {
+                                    Log.i("ExternalStorage", "Scanned " + path + ":");
+                                    Log.i("ExternalStorage", "-> uri=" + uri);
+                                }
+                            });
                     Bitmap bitmap = BitmapFactory.decodeFile(mPath);
-                    mSetImage.setImageBitmap(bitmap);
-                }
-                break;
-            case SELECT_PICTURE:
-                if(resultCode == RESULT_OK){
+                        mSetImage.setImageBitmap(bitmap);
+                    break;
+                case SELECT_PICTURE:
                     Uri path = data.getData();
                     mSetImage.setImageURI(path);
-                }
-                break;
+                    break;
+            }
+
         }
 
     }
@@ -158,7 +172,7 @@ public class MainActivity extends AppCompatActivity {
 
         if((shouldShowRequestPermissionRationale(WRITE_EXTERNAL_STORAGE)) || (shouldShowRequestPermissionRationale(CAMERA))){
             Snackbar.make(mRlView,
-                    "Los permisos de escritura y de cámara son necesarios para poder usar la aplicación",
+                    "Los permisos son necesarios para poder usar la aplicación",
                     Snackbar.LENGTH_INDEFINITE).setAction(android.R.string.ok, new View.OnClickListener() {
                 @TargetApi(Build.VERSION_CODES.M)
                 @Override
@@ -181,9 +195,8 @@ public class MainActivity extends AppCompatActivity {
         if(requestCode == MY_PERMISSIONS){
             if(grantResults.length == 2 && grantResults[0] == PackageManager.PERMISSION_GRANTED && grantResults[1] == PackageManager.PERMISSION_GRANTED){
                 Toast.makeText(MainActivity.this, "Permisos aceptados", Toast.LENGTH_SHORT).show();
-
+                mOptionButton.setEnabled(true);
             }else{
-                Log.d("Roberto", "permisos denegados");
                 showExplanation();
 
             }
@@ -191,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showExplanation() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
         builder.setTitle("Permisos denegados");
         builder.setMessage("Para usar las funciones de la app necesitas aceptar los permisos de cámara y de escribir en memoria");
         builder.setPositiveButton("Aceptar", new DialogInterface.OnClickListener() {
@@ -210,6 +223,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
+                Toast.makeText(MainActivity.this, "Sin permisos no puedes usar la app", Toast.LENGTH_LONG).show();
+                finish();
             }
         });
 
